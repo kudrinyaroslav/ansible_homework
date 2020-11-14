@@ -1,0 +1,71 @@
+- name: Install and activate FTP
+  hosts: all
+  become: yes
+  vars:
+    vsftpd_anon_upload: YES
+
+  tasks:
+  - name: libsemanage-python install
+    yum:
+      name: libsemanage-python
+      state: latest
+
+  - name: install ftpd
+    yum:
+      name: vsftpd
+      state: latest
+
+  - name: activate ftpd
+    service:
+      name: vsftpd
+      state: started
+      enabled: yes
+
+  - name: activate firewalld
+    service:
+      name: firewalld
+      state: started
+    
+  - name: open ports
+    firewalld:
+      port: 21/tcp
+      state: enabled
+      permanent: true
+  
+  - name: open service
+    firewalld:
+      service: ftp
+      state: enabled
+      permanent: true
+
+  - name: apply template vsftpd.conf.j2 for vm
+    template:
+      src: ./vsftpd.conf.j2
+      dest: /etc/vsftpd/vsftpd.conf
+      owner: root
+      group: root
+      mode: 0600
+
+  - name: ftp reload
+    service:
+      name: firewalld
+      state: restarted
+
+  - name: setting up selinux for ftpd 1
+    seboolean:
+      name: ftpd_anon_write
+      state: yes
+      persistent: yes
+  - name: setting up selinux for ftpd 2  
+    seboolean:
+      name: ftpd_full_access
+      state: yes
+      persistent: yes
+  
+  - name: Give right on pub directory
+    file:
+      path: /var/ftp/pub
+      mode: 0777
+    
+  - name: reboot
+    command: /sbin/reboot

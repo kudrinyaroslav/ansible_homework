@@ -1,0 +1,15 @@
+---
+- name: playbook2
+  hosts: all
+  tasks:
+    - name: disable NetworkManager
+      service: name=NetworkManager state=stopped enabled=no
+
+    - name: add a new params
+      lineinfile:
+        path: /etc/default/grub
+        regexp: 'GRUB_CMDLINE_LINUX'
+        line: 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0"'
+    
+    - name: run grab2-mkconfig
+      command: /usr/sbin/grub2-mkconfig

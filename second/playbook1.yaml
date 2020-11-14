@@ -1,0 +1,13 @@
+- name: playbook1
+  hosts: all
+  become: yes
+  roles:
+
+    - role: test-role-1
+  handlers:
+    - name: Restart Apache
+      debug:
+        msg: "test"
+
+          
+
